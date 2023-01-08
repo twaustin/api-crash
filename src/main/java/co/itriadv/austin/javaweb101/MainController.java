@@ -1,13 +1,10 @@
 package co.itriadv.austin.javaweb101;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping(path = "/tasks") // This means URL's start with /demo (after
@@ -24,14 +21,15 @@ public class MainController {
 	}
 
 	@RequestMapping(path = "", method = { RequestMethod.POST })
-	public @ResponseBody String addTask(@RequestParam String text, @RequestParam String day,
-			@RequestParam Boolean reminder) {
-		Task t = new Task();
-		t.setTaskText(text);
-		t.setTaskDay(day);
-		t.setReminder(reminder);
-		taskRepository.save(t);
-		return "Save Successfully";
+	public @ResponseBody String addTask(@RequestBody Task data) throws JsonProcessingException {
+//		Task t = new Task();
+//		t.setTaskText(data.getTaskText());
+//		t.setTaskDay(data.getTaskDay());
+//		t.setReminder(data.getReminder());
+		taskRepository.save(data);
+		taskRepository.flush();
+		ObjectMapper objectMapper = new ObjectMapper();
+		return objectMapper.writeValueAsString(data);
 	}
 
 	@RequestMapping(path = "/{id}", method = { RequestMethod.DELETE })
@@ -44,12 +42,11 @@ public class MainController {
 	}
 
 	@RequestMapping(path = "/{id}", method = { RequestMethod.PUT })
-	public @ResponseBody String updateTask(@PathVariable(value = "id") Integer id) {
-
-		Task t = new Task();
-		t.setId(id);
-		taskRepository.delete(t);
-		return "Update Successfully";
+	public @ResponseBody String updateTask(@RequestBody Task data) throws JsonProcessingException {
+		taskRepository.save(data);
+		taskRepository.flush();
+		ObjectMapper objectMapper = new ObjectMapper();
+		return objectMapper.writeValueAsString(data);
 	}
 
 	@RequestMapping(path = "/{id}", method = { RequestMethod.GET })
